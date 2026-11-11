@@ -160,8 +160,9 @@ class TestApi(unittest.TestCase):
     def test_man_checkout(self):
         status, data = req(self.base, "GET", "/api/man?cmd=checkout&repo=" + self.repo)
         self.assertEqual(status, 200)
-        self.assertGreater(len(data["text"]), 50)
-        self.assertIn("usage", data["text"].lower())
+        self.assertGreater(len(data["text"]), 200)
+        self.assertIn("checkout", data["text"].lower())
+        self.assertTrue(any(k in data["text"].lower() for k in ("usage", "synopsis", "name")))
 
     def test_help_short(self):
         status, data = req(self.base, "GET", "/api/help?cmd=log")

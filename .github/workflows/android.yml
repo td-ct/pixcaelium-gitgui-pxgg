@@ -27,7 +27,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Sync GUI into Android assets
-        run: cd android && ./sync-gui.sh
+        run: sh android/sync-gui.sh
 
       - name: Generate Gradle wrapper
         run: cd android && gradle wrapper --gradle-version 8.10

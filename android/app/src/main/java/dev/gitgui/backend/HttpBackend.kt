@@ -32,8 +32,11 @@ class HttpBackend(private val baseUrl: String, private val token: String? = null
 
     override fun complete(repo: String?, words: List<String>, cword: Int): Map<String, Any?> {
         val r = call("POST", "/api/complete", JSONObject().put("repo", repo).put("words", words).put("cword", cword))
+        val arr = r.optJSONArray("candidates")
+        val n = arr?.length() ?: 0
+        val cands = (0 until n).map { i -> arr!!.getString(i) }
         return mapOf(
-            "candidates" to (0 until r.optJSONArray("candidates")?.length() ?: 0).map { r.getJSONArray("candidates").getString(it) },
+            "candidates" to cands,
             "common_prefix" to r.optString("common_prefix"),
             "source" to r.optString("source"),
         )
@@ -55,10 +58,13 @@ class HttpBackend(private val baseUrl: String, private val token: String? = null
 
     override fun listDirs(path: String?): Map<String, Any?> {
         val r = call("POST", "/api/fs/list", JSONObject().put("path", path ?: ""))
+        val arr = r.optJSONArray("dirs")
+        val n = arr?.length() ?: 0
+        val dirs = (0 until n).map { i -> arr!!.getString(i) }
         return mapOf(
             "path" to r.optString("path"),
             "parent" to r.optString("parent"),
-            "dirs" to (0 until r.optJSONArray("dirs")?.length() ?: 0).map { r.getJSONArray("dirs").getString(it) },
+            "dirs" to dirs,
         )
     }
 }

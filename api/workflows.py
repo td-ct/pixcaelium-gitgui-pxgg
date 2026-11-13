@@ -1,6 +1,9 @@
+import threading
+
 from . import error_patterns
 
 WORKFLOWS = {}
+_CTX = threading.local()
 
 
 def wf(wf_id, title_key, desc_key, params):
@@ -14,7 +17,7 @@ def wf(wf_id, title_key, desc_key, params):
 
 
 def step(backend, repo, args, timeout=60):
-    r = backend.run_trunc(repo, args, timeout)
+    r = backend.run_trunc(repo, args, timeout, job_id=getattr(_CTX, "job_id", None))
     return {
         "args": list(args), "exit_code": r.exit_code,
         "stdout": r.stdout, "stderr": r.stderr, "truncated": r.truncated,
@@ -334,9 +337,13 @@ def coerce_params(spec, params):
     return out
 
 
-def run_workflow(backend, state, repo, wf_id, params):
+def run_workflow(backend, state, repo, wf_id, params, job_id=None):
     spec = WORKFLOWS.get(wf_id)
     if not spec:
         return {"ok": False, "error": {"id": "unknown_workflow", "title_key": "err.unknown_workflow.title", "detail_key": "err.unknown_workflow.detail", "suggestions": []}, "steps": [], "output": "", "data": {}}
     coerced = coerce_params(spec, params)
-    return spec["run"](backend, state, repo, coerced)
+    _CTX.job_id = job_id
+    try:
+        return spec["run"](backend, state, repo, coerced)
+    finally:
+        _CTX.job_id = None

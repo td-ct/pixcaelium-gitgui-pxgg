@@ -68,7 +68,8 @@ object ApiRouter {
                     val args = json.getJSONArray("args")
                     val argList = (0 until args.length()).map { args.getString(it) }
                     val timeout = json.optInt("timeout", 60).coerceIn(5, 300)
-                    val r = backend.run(repo, argList, timeout)
+                    val jobId = json.optString("job_id", null)
+                    val r = backend.run(repo, argList, timeout, jobId)
                     200 to JSONObject().put("exit_code", r.exitCode).put("stdout", trunc(r.stdout))
                         .put("stderr", trunc(r.stderr)).put("truncated", false).put("args", JSONArray(argList)).toString()
                 }
@@ -96,6 +97,44 @@ object ApiRouter {
                 path == "/api/fs/list" && method == "POST" -> 200 to JSONObject(backend.listDirs(json.optString("path", null))).toString()
 
                 path == "/api/repos" -> 200 to JSONObject().put("repos", JSONArray()).toString()
+
+                path == "/api/stop" && method == "POST" ->
+                    200 to JSONObject().put("stopped", backend.stop(json.optString("job_id"))).toString()
+
+                path == "/api/preflight" -> {
+                    val checks = JSONArray()
+                    fun add(id: String, label: String, ok: Boolean, detail: String = "", install: String? = null, optional: Boolean = false) {
+                        val o = JSONObject().put("id", id).put("label_key", label).put("ok", ok)
+                            .put("detail", detail).put("optional", optional)
+                        if (install != null) o.put("install", install) else o.put("install", JSONObject.NULL)
+                        checks.put(o)
+                    }
+                    val g = backend.raw(listOf("git", "--version"))
+                    add("git", "pf.git", g.exitCode == 0, g.stdout.trim().lineSequence().firstOrNull() ?: "", if (g.exitCode != 0) "git" else null)
+                    val bsh = backend.raw(listOf("bash", "-c", "echo ok"))
+                    add("bash", "pf.bash", bsh.exitCode == 0 && bsh.stdout.trim() == "ok", "", if (bsh.exitCode != 0) "bash" else null)
+                    val comp = backend.raw(listOf("bash", "-c", "for f in \"\$PREFIX/share/bash-completion/completions/git\" \"\$PREFIX/share/git-core/git-completion.bash\"; do [ -f \"\$f\" ] && echo \"\$f\" && exit 0; done; exit 1"))
+                    add("completion", "pf.completion", comp.exitCode == 0, comp.stdout.trim(), if (comp.exitCode != 0) "bash-completion" else null, optional = true)
+                    val mn = backend.raw(listOf("bash", "-c", "command -v man || true"))
+                    add("man", "pf.man", mn.stdout.isNotBlank(), mn.stdout.trim(), optional = true)
+                    if (backend.name == "termux") {
+                        val ping = backend.raw(listOf("echo", "ok"), timeoutSec = 20)
+                        add("termux_connection", "pf.termux_connection", ping.exitCode == 0 && ping.stdout.trim() == "ok", ping.stderr.trim().take(200))
+                        val props = backend.raw(listOf("bash", "-c", "grep -Eq '^allow-external-apps[[:space:]]*=[[:space:]]*true' \"\$HOME/.termux/termux.properties\" && echo yes || echo no"))
+                        add("allow_external_apps", "pf.allow_external_apps", props.stdout.trim() == "yes", if (props.stdout.trim() != "yes") "setze allow-external-apps = true in ~/.termux/termux.properties" else "")
+                        add("storage", "pf.storage", true, "Termux braucht Storage-Zugriff fuer /storage/emulated/0; Akku-Optimierung abschalten", optional = true)
+                    }
+                    val okAll = (0 until checks.length()).all { checks.getJSONObject(it).getBoolean("ok") || checks.getJSONObject(it).getBoolean("optional") }
+                    200 to JSONObject().put("backend", backend.name).put("ok", okAll).put("checks", checks).toString()
+                }
+
+                path == "/api/preflight/install" && method == "POST" -> {
+                    val pkgs = json.getJSONArray("packages")
+                    val list = (0 until pkgs.length()).map { pkgs.getString(it) }
+                    val r = if (backend.name == "termux") backend.raw(listOf("pkg", "install", "-y") + list, timeoutSec = 600)
+                            else ExecResult(1, "", "apt install ${list.joinToString(" ")}")
+                    200 to JSONObject().put("ok", r.exitCode == 0).put("output", (r.stdout + r.stderr).takeLast(4000)).toString()
+                }
 
                 else -> 404 to JSONObject().put("error", "unknown endpoint").toString()
             }

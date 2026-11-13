@@ -113,3 +113,46 @@ main { padding: 14px; }
   .pro-layout { grid-template-columns: 1fr; }
   #cmd-tree { max-height: 200px; }
 }
+
+#term-drawer {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+  background: #000; border-top: 1px solid #1f4d1f;
+}
+#term-bar {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  height: 26px; padding: 0 10px; cursor: pointer; user-select: none;
+  background: #000; color: #33ff33;
+  font: 12px ui-monospace, monospace;
+}
+#term-last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.term-hint { color: #1f8f1f; flex-shrink: 0; }
+#term-log {
+  display: none; margin: 0; padding: 6px 10px; height: 38vh; overflow: auto;
+  background: #000; color: #33ff33; font: 12px/1.5 ui-monospace, monospace;
+  white-space: pre-wrap; word-break: break-word;
+}
+#term-drawer.open #term-log { display: block; }
+#term-drawer.open #term-bar { border-bottom: 1px solid #1f4d1f; }
+
+#busy {
+  position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .65);
+  display: flex; align-items: center; justify-content: center;
+}
+.busy-box {
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 12px;
+  padding: 22px 30px; text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center;
+}
+.hourglass { font-size: 34px; animation: flip 1.2s ease-in-out infinite; }
+@keyframes flip {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#preflight-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.pf-row { display: flex; gap: 8px; align-items: baseline; font-size: 13px; }
+.pf-row .ok { color: var(--ok); }
+.pf-row .bad { color: var(--err); }
+.pf-row .detail { color: var(--muted); font-size: 12px; }
+#preflight-btn.warn { border-color: var(--warn); color: var(--warn); }
+#preflight-output { max-height: 200px; overflow: auto; background: #0d1015; border-radius: 6px; padding: 6px; font: 11px ui-monospace, monospace; }

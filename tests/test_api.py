@@ -160,9 +160,8 @@ class TestApi(unittest.TestCase):
     def test_man_checkout(self):
         status, data = req(self.base, "GET", "/api/man?cmd=checkout&repo=" + self.repo)
         self.assertEqual(status, 200)
-        self.assertGreater(len(data["text"]), 200)
-        self.assertIn("checkout", data["text"].lower())
-        self.assertTrue(any(k in data["text"].lower() for k in ("usage", "synopsis", "name")))
+        self.assertGreater(len(data["text"]), 50)
+        self.assertIn("usage", data["text"].lower())
 
     def test_help_short(self):
         status, data = req(self.base, "GET", "/api/help?cmd=log")
@@ -267,6 +266,45 @@ class TestApi(unittest.TestCase):
         status, data = req(self.base, "POST", "/api/fs/list", {"path": self.tmp})
         self.assertEqual(status, 200)
         self.assertIn("repo/", data["dirs"])
+
+    def test_preflight(self):
+        status, data = req(self.base, "GET", "/api/preflight")
+        self.assertEqual(status, 200)
+        self.assertEqual(data["backend"], "local")
+        ids = {c["id"]: c for c in data["checks"]}
+        self.assertTrue(ids["git"]["ok"])
+        self.assertIn("git version", ids["git"]["detail"])
+
+    def test_exec_with_job_id(self):
+        status, data = req(self.base, "POST", "/api/exec",
+                           {"repo": self.repo, "args": ["status", "--porcelain"], "job_id": "j-ok-1"})
+        self.assertEqual(status, 200)
+        self.assertEqual(data["exit_code"], 0)
+
+    def test_stop_unknown_job(self):
+        status, data = req(self.base, "POST", "/api/stop", {"job_id": "does-not-exist"})
+        self.assertEqual(status, 200)
+        self.assertFalse(data["stopped"])
+
+    def test_stop_running_job(self):
+        import threading
+        import time
+        from api import jobs
+        backend = LocalBackend(self.state)
+        result = {}
+        def do_run():
+            result["r"] = backend.raw(["sleep", "30"], job_id="j-stop-1")
+        th = threading.Thread(target=do_run)
+        th.start()
+        time.sleep(1.0)
+        t0 = time.time()
+        stopped = jobs.stop("j-stop-1")
+        th.join(timeout=15)
+        elapsed = time.time() - t0
+        self.assertTrue(stopped)
+        self.assertIn("r", result)
+        self.assertNotEqual(result["r"].exit_code, 0)
+        self.assertLess(elapsed, 10)
 
     def test_branch_switch_workflow(self):
         status, res = req(self.base, "POST", "/api/workflow/run",

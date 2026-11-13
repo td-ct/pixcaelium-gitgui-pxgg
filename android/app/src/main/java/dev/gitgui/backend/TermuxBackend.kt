@@ -84,11 +84,18 @@ class TermuxBackend(private val context: Context) : Backend {
         }
     }
 
-    override fun run(repo: String?, args: List<String>, timeoutSec: Int): ExecResult {
+    override fun run(repo: String?, args: List<String>, timeoutSec: Int, jobId: String?): ExecResult {
         val all = mutableListOf("-c", "core.quotepath=false")
         all.addAll(args)
-        val b = send("$PREFIX/bin/git", all.toTypedArray(), repo ?: "$PREFIX/home",
-            "gitgui: git ${args.firstOrNull() ?: ""}", timeoutSec)
+        val workdir = repo ?: "$PREFIX/home"
+        val b = if (jobId != null) {
+            send("$PREFIX/bin/bash",
+                arrayOf("-c", "exec -a \"\$0\" \"\$@\"", "gitgui-job-$jobId", "git", *all.toTypedArray()),
+                workdir, "gitgui: git ${args.firstOrNull() ?: ""}", timeoutSec)
+        } else {
+            send("$PREFIX/bin/git", all.toTypedArray(), workdir,
+                "gitgui: git ${args.firstOrNull() ?: ""}", timeoutSec)
+        }
         val err = b.getInt(RESULT_ERR, -1)
         val errmsg = if (err != -1) b.getString(RESULT_ERRMSG) ?: "" else ""
         return ExecResult(
@@ -98,20 +105,32 @@ class TermuxBackend(private val context: Context) : Backend {
         )
     }
 
+    override fun raw(args: List<String>, cwd: String?, timeoutSec: Int): ExecResult {
+        val path = if (args[0].startsWith("/")) args[0] else "$PREFIX/bin/" + args[0].substringAfterLast('/')
+        val b = send(path, args.drop(1).toTypedArray(), cwd ?: "$PREFIX/home", "gitgui: ${args[0]}", timeoutSec)
+        return ExecResult(b.getInt(RESULT_EXIT_CODE, 1), b.getString(RESULT_STDOUT) ?: "", b.getString(RESULT_STDERR) ?: "")
+    }
+
+    override fun stop(jobId: String): Boolean {
+        raw(listOf("pkill", "-TERM", "-f", "gitgui-job-$jobId"), timeoutSec = 15)
+        raw(listOf("pkill", "-KILL", "-f", "gitgui-job-$jobId"), timeoutSec = 15)
+        return true
+    }
+
     override fun complete(repo: String?, words: List<String>, cword: Int): Map<String, Any?> {
         val arr = words.joinToString(" ") { w -> "'" + w.replace("'", "'\\''") + "'" }
         val script = """
             shopt -s progcomp 2>/dev/null
             COMP_WORDBREAKS=" "
             for f in "$PREFIX/share/bash-completion/completions/git" "$PREFIX/share/git-core/git-completion.bash" /usr/share/bash-completion/completions/git; do
-              if [ -f "${'$'}f" ]; then source "${'$'}f" 2>/dev/null; break; fi
+              if [ -f "$$f" ]; then source "$$f" 2>/dev/null; break; fi
             done
             COMP_WORDS=($arr)
             COMP_CWORD=$cword
             COMP_LINE="${words.joinToString(" ")}"
             COMP_POINT=${'$'}{#COMP_LINE}
             words=("${'$'}{COMP_WORDS[@]}")
-            cword=${'$'}COMP_CWORD
+            cword=$COMP_CWORD
             cur="${'$'}{words[cword]}"
             prev="${'$'}{words[cword-1]}"
             COMPREPLY=()

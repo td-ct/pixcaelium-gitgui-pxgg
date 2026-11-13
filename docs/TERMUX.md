@@ -2,6 +2,19 @@
 
 Offizielle Doku: [termux/termux-app Wiki — RUN_COMMAND Intent](https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent)
 
+## Betriebsmodus: Muss Termux laufen/sichtbar sein?
+
+**Nein — die App arbeitet im Hintergrund-Modus** (`RUN_COMMAND_BACKGROUND = true`): es wird kein Terminal-Fenster geöffnet, der Befehl läuft als Background-Task im Termux-Service. Termux muss dafür nicht sichtbar sein, aber der Termux-Service muss starten dürfen. Konkret:
+
+- Termux mindestens **einmal manuell geöffnet** haben (damit der Service/Prozess starten darf; ab Android 10 blockiert das System sonst Background-Service-Starts — „app is in background“).
+- Permission **„Run commands in Termux environment"** für gitgui freigegeben (Systemeinstellungen → Apps → gitgui → Berechtigungen).
+- `allow-external-apps = true` in `~/.termux/termux.properties`.
+- **Akku-Optimierung für Termux abschalten** (sonst killt Android den Service).
+- Nur für *Foreground*-Sessions (nicht genutzt von gitgui): „Draw Over Apps" für Termux erlauben.
+- Repos auf `/storage/emulated/0`: Termux braucht Storage-/„Files and media"-Zugriff.
+
+Der Preflight-Check der App (`GET /api/preflight` bzw. „System check" in der GUI) prüft genau das: Verbindung via RUN_COMMAND (Ping), git, bash, bash-completion, man, `allow-external-apps` — und bietet an, fehlende Pakete direkt per `pkg install` in Termux zu installieren.
+
 ## Setup (einmalig)
 
 1. Dritt-App deklariert `<uses-permission android:name="com.termux.permission.RUN_COMMAND"/>`

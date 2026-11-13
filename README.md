@@ -16,6 +16,14 @@ Eigenschaften:
 
 - **Verzeichnisse einfach anwählbar** (Repo-Liste + Verzeichnis-Browser), **Zugangsdaten zentral verwaltet**
   (lokaler `credential.store`, wird per `credential.helper` injiziert).
+- **Terminal-Drawer** unten: kollabiert nur letzte Zeile, per Tap hochziehbar, klassisch grün auf schwarz;
+  loggt jeden ausgeführten Befehl.
+- **Sperr-Sanduhr mit Stopp**: während ein Workflow oder Einzelbefehl läuft, ist die App gesperrt (⏳-Overlay),
+  laufende Jobs lassen sich per „Stop" killen (`POST /api/stop`, Prozessgruppe via `start_new_session`/`killpg`;
+  im Termux-Backend über `exec -a gitgui-job-<id>` + `pkill -f`).
+- **System-Check beim Start** (`GET /api/preflight`): prüft Termux-Verbindung (RUN_COMMAND-Ping), git, bash,
+  bash-completion, man, `allow-external-apps`; fehlende Pakete können direkt per `pkg install` in Termux
+  nachinstalliert werden (`POST /api/preflight/install`).
 - **Mehrsprachig** (en/de, erweiterbar): git-Befehle bleiben immer im Original, nur UI/Hilfen/Tooltips werden übersetzt.
 - **Backend-unabhängig**: überall laufen nur Texte (JSON) hin und her — lokal (subprocess), Termux
   (`RUN_COMMAND`-Intent), oder remote (HTTP, z. B. Colab). Siehe `docs/ARCHITECTURE.md`.

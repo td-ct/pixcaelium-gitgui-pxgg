@@ -4,6 +4,8 @@ import os
 import urllib.parse
 
 from . import commands as commands_mod
+from . import jobs as jobs_mod
+from . import preflight as preflight_mod
 from . import repos as repos_mod
 from . import workflows as workflows_mod
 
@@ -95,7 +97,7 @@ class Api:
         if path == "workflow/run" and method == "POST":
             wf_id = str(data.get("id", ""))
             repo = data.get("repo") or None
-            res = workflows_mod.run_workflow(b, st, repo, wf_id, data.get("params") or {})
+            res = workflows_mod.run_workflow(b, st, repo, wf_id, data.get("params") or {}, job_id=data.get("job_id"))
             return 200, res, "application/json"
 
         if path == "exec" and method == "POST":
@@ -104,11 +106,27 @@ class Api:
                 return 400, {"error": "args must be a list of strings (max 200)"}, "application/json"
             repo = data.get("repo") or None
             timeout = data.get("timeout", 60)
-            r = b.run_trunc(repo, args, timeout)
+            r = b.run_trunc(repo, args, timeout, job_id=data.get("job_id"))
             return 200, {
                 "exit_code": r.exit_code, "stdout": r.stdout, "stderr": r.stderr,
                 "truncated": r.truncated, "args": args,
             }, "application/json"
+
+        if path == "stop" and method == "POST":
+            job_id = str(data.get("job_id", ""))
+            if not job_id:
+                return 400, {"error": "job_id required"}, "application/json"
+            stopped = jobs_mod.stop(job_id) or b.stop(job_id)
+            return 200, {"stopped": stopped, "job_id": job_id}, "application/json"
+
+        if path == "preflight" and method in ("GET", "POST"):
+            return 200, preflight_mod.run_preflight(b, st), "application/json"
+
+        if path == "preflight/install" and method == "POST":
+            packages = data.get("packages")
+            if not isinstance(packages, list) or not all(isinstance(p, str) for p in packages) or len(packages) > 20:
+                return 400, {"error": "packages must be a list of strings (max 20)"}, "application/json"
+            return 200, preflight_mod.install_packages(b, packages), "application/json"
 
         if path == "complete" and method == "POST":
             words = data.get("words")

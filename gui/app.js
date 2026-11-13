@@ -5,7 +5,38 @@ const S = {
   workflows: [],
   catalog: null,
   currentCmd: null,
+  backend: "local",
 };
+
+let currentJob = null;
+
+function logTerm(text) {
+  const log = $("#term-log");
+  log.textContent += text.replace(/\n?$/, "\n");
+  log.scrollTop = log.scrollHeight;
+  const lines = text.trimEnd().split("\n");
+  $("#term-last").textContent = lines[lines.length - 1] || "";
+}
+
+function busyStart() {
+  currentJob = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "job-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  $("#busy").classList.remove("hidden");
+}
+
+function busyEnd() {
+  $("#busy").classList.add("hidden");
+  currentJob = null;
+}
+
+function summarize(res) {
+  let s = "";
+  for (const st of res.steps || []) {
+    s += "$ git " + st.args.join(" ") + "  → exit " + st.exit_code + "\n";
+    const out = (st.stdout + st.stderr).trim();
+    if (out) s += out.split("\n").slice(-3).join("\n") + "\n";
+  }
+  return s || "(no output)\n";
+}
 
 const $ = (s) => document.querySelector(s);
 
@@ -48,6 +79,7 @@ async function loadI18n() {
 
 async function loadMeta() {
   const meta = await api("/meta");
+  S.backend = meta.backend || "local";
   const sel = $("#lang-select");
   sel.innerHTML = "";
   for (const l of meta.langs) {
@@ -184,11 +216,16 @@ async function runWorkflow(wf, fields, card) {
   }
   const out = card.lastElementChild;
   out.innerHTML = `<div class="output"><span class="badge">${esc(t("ui.loading"))}</span></div>`;
+  busyStart();
   try {
-    const res = await api("/workflow/run", { method: "POST", body: JSON.stringify({ repo: S.repo || null, id: wf.id, params }) });
+    const res = await api("/workflow/run", { method: "POST", body: JSON.stringify({ repo: S.repo || null, id: wf.id, params, job_id: currentJob }) });
     renderResult(out, res);
+    logTerm("$ gitgui workflow " + wf.id + " " + JSON.stringify(params) + "\n" + summarize(res));
   } catch (e) {
     out.innerHTML = `<div class="output"><pre class="stderr">${esc(e.message)}</pre></div>`;
+    logTerm("$ gitgui workflow " + wf.id + "  → error: " + e.message + "\n");
+  } finally {
+    busyEnd();
   }
 }
 
@@ -219,8 +256,13 @@ function renderResult(out, res) {
 async function handleSuggestion(s, out) {
   if (s.type === "exec") {
     switchTab("pro");
-    const res = await api("/exec", { method: "POST", body: JSON.stringify({ repo: S.repo || null, args: s.args }) });
-    showProOutput(res);
+    busyStart();
+    try {
+      const res = await api("/exec", { method: "POST", body: JSON.stringify({ repo: S.repo || null, args: s.args, job_id: currentJob }) });
+      showProOutput(res);
+    } finally {
+      busyEnd();
+    }
   } else if (s.type === "workflow") {
     const res = await api("/workflow/run", { method: "POST", body: JSON.stringify({ repo: S.repo || null, id: s.workflow, params: s.params || {} }) });
     renderResult(out, res);
@@ -336,8 +378,13 @@ async function runCommand(cmd, fields) {
   }
   const extra = $("#extra-args").value.split("\n").map((l) => l.trim()).filter(Boolean);
   args.push(...extra);
-  const res = await api("/exec", { method: "POST", body: JSON.stringify({ repo: S.repo || null, args: [cmd.name, ...args] }) });
-  showProOutput(res);
+  busyStart();
+  try {
+    const res = await api("/exec", { method: "POST", body: JSON.stringify({ repo: S.repo || null, args: [cmd.name, ...args], job_id: currentJob }) });
+    showProOutput(res);
+  } finally {
+    busyEnd();
+  }
 }
 
 function showProOutput(res) {
@@ -349,6 +396,9 @@ function showProOutput(res) {
   if (res.stderr) html += `<pre class="stderr">${esc(res.stderr)}</pre>`;
   if (!res.stdout && !res.stderr) html += `<pre>${esc(t("ui.no_output"))}</pre>`;
   out.innerHTML = html;
+  const outTxt = (res.stdout + res.stderr).trim();
+  logTerm("$ git " + (res.args || []).join(" ") + "  → exit " + res.exit_code + "\n" +
+    (outTxt ? outTxt.split("\n").slice(-3).join("\n") + "\n" : ""));
 }
 
 function attachCompletion(input, getWords) {
@@ -487,10 +537,80 @@ async function browseList(path) {
   }
 }
 
+$("#term-bar").onclick = () => $("#term-drawer").classList.toggle("open");
+
+$("#busy-stop").onclick = async () => {
+  if (currentJob) {
+    try {
+      await api("/stop", { method: "POST", body: JSON.stringify({ job_id: currentJob }) });
+      logTerm("■ stopped job " + currentJob + "\n");
+    } catch (e) {
+      logTerm("■ stop failed: " + e.message + "\n");
+    }
+  }
+  busyEnd();
+};
+
+$("#preflight-btn").onclick = () => { runPreflight(); $("#preflight-modal").classList.remove("hidden"); };
+$("#preflight-close").onclick = () => $("#preflight-modal").classList.add("hidden");
+$("#preflight-refresh").onclick = () => runPreflight();
+$("#preflight-install").onclick = async () => {
+  const btn = $("#preflight-install");
+  const pkgs = (btn.dataset.pkgs || "").split(",").filter(Boolean);
+  if (!pkgs.length) return;
+  btn.disabled = true;
+  const out = $("#preflight-output");
+  out.classList.remove("hidden");
+  out.textContent = t("ui.loading") + "\n";
+  try {
+    const res = await api("/preflight/install", { method: "POST", body: JSON.stringify({ packages: pkgs }) });
+    out.textContent = (res.output || "") + "\n=> " + (res.ok ? "ok" : "failed");
+  } catch (e) {
+    out.textContent = e.message;
+  }
+  btn.disabled = false;
+  await runPreflight();
+};
+
+async function runPreflight() {
+  const btn = $("#preflight-btn");
+  try {
+    const pf = await api("/preflight");
+    S.backend = pf.backend;
+    const list = $("#preflight-list");
+    list.innerHTML = "";
+    const missing = [];
+    for (const c of pf.checks) {
+      const row = document.createElement("div");
+      row.className = "pf-row";
+      row.innerHTML = `<span class="${c.ok ? "ok" : "bad"}">${c.ok ? "✓" : "✗"}</span>` +
+        `<span>${esc(t(c.label_key))}${c.optional ? " (" + esc(t("ui.optional")) + ")" : ""}</span>` +
+        (c.detail ? `<span class="detail">${esc(c.detail)}</span>` : "");
+      list.appendChild(row);
+      if (!c.ok && c.install) missing.push(c.install);
+    }
+    btn.classList.toggle("warn", !pf.ok);
+    const ib = $("#preflight-install");
+    if (missing.length && pf.backend === "termux") {
+      ib.classList.remove("hidden");
+      ib.dataset.pkgs = missing.join(",");
+      ib.textContent = t("ui.install_missing") + " (" + missing.join(", ") + ")";
+    } else {
+      ib.classList.add("hidden");
+      ib.dataset.pkgs = "";
+    }
+  } catch (e) {
+    $("#preflight-list").innerHTML = `<div class="pf-row"><span class="bad">✗</span><span>${esc(e.message)}</span></div>`;
+    btn.classList.add("warn");
+  }
+}
+
 (async function init() {
   await loadMeta();
   await loadI18n();
   await loadRepos();
   await loadWorkflows();
   await loadCatalog();
+  runPreflight();
+  logTerm("gitgui ready — backend: " + S.backend + "\n");
 })();

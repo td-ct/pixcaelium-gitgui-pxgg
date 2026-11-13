@@ -27,8 +27,14 @@ class Backend(ABC):
         return args
 
     @abstractmethod
-    def run(self, repo, args, timeout=60):
+    def run(self, repo, args, timeout=60, job_id=None):
         ...
+
+    def raw(self, args, cwd=None, timeout=30, job_id=None):
+        return ExecResult(127, "", "raw() not implemented for backend " + self.name)
+
+    def stop(self, job_id):
+        return False
 
     @abstractmethod
     def complete(self, repo, words, cword):
@@ -46,8 +52,8 @@ class Backend(ABC):
     def help_a(self, cwd=None):
         return parse_help_a(self, cwd)
 
-    def run_trunc(self, repo, args, timeout=60):
-        r = self.run(repo, args, timeout)
+    def run_trunc(self, repo, args, timeout=60, job_id=None):
+        r = self.run(repo, args, timeout, job_id=job_id)
         out, t1 = truncate(r.stdout)
         err, t2 = truncate(r.stderr)
         return ExecResult(r.exit_code, out, err, t1 or t2)

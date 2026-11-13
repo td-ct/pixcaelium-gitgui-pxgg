@@ -3,7 +3,6 @@ package dev.gitgui
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
-import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView

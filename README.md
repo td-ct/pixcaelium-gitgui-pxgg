@@ -92,3 +92,7 @@ gitgui/
   tests/               # End-to-End-Tests
   docs/                # ARCHITECTURE.md, TERMUX.md
 ```
+
+## CI
+
+Artefakt (APK+AAB) lokal holen: `sh scripts/download-artifact.sh`.

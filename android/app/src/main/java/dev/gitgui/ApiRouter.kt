@@ -106,6 +106,20 @@ object ApiRouter {
 
 
                 
+path == "/api/preflight/install" && method == "POST" -> {
+                    val pkgs = json.getJSONArray("packages")
+                    val list = (0 until pkgs.length()).map { pkgs.getString(it) }
+                    val r = if (backend.name == "termux") backend.raw(listOf("pkg", "install", "-y") + list, timeoutSec = 600)
+                            else ExecResult(1, "", "apt install ${list.joinToString(" ")}")
+                    200 to JSONObject().put("ok", r.exitCode == 0).put("output", (r.stdout + r.stderr).takeLast(4000)).toString()
+                }
+
+                else -> 404 to JSONObject().put("error", "unknown endpoint").toString()
+            }
+        } catch (e: Exception) {
+            500 to JSONObject().put("error", e.message ?: "error").toString()
+        }
+    }
     private val preflightLock = java.util.concurrent.atomic.AtomicBoolean(false)
     private var preflightCache: String? = null
     private var preflightCacheTs = 0L
@@ -153,18 +167,4 @@ object ApiRouter {
                     return JSONObject().put("backend", backend.name).put("ok", okAll).put("checks", checks).toString()
     }
 
-                path == "/api/preflight/install" && method == "POST" -> {
-                    val pkgs = json.getJSONArray("packages")
-                    val list = (0 until pkgs.length()).map { pkgs.getString(it) }
-                    val r = if (backend.name == "termux") backend.raw(listOf("pkg", "install", "-y") + list, timeoutSec = 600)
-                            else ExecResult(1, "", "apt install ${list.joinToString(" ")}")
-                    200 to JSONObject().put("ok", r.exitCode == 0).put("output", (r.stdout + r.stderr).takeLast(4000)).toString()
-                }
-
-                else -> 404 to JSONObject().put("error", "unknown endpoint").toString()
-            }
-        } catch (e: Exception) {
-            500 to JSONObject().put("error", e.message ?: "error").toString()
-        }
-    }
 }

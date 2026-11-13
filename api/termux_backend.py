@@ -154,8 +154,3 @@ class TermuxBackend(Backend):
         common = os.path.commonprefix(candidates) if candidates else ""
         return {"candidates": candidates, "common_prefix": common, "source": "termux"}
 
-    def list_dirs(self, path):
-        r = self.run(None, ["ls", "-1", "-d", (path or TERMUX_PREFIX + "/home") + "/*/"], timeout=30)
-        dirs = [l.strip().rstrip("/").split("/")[-1] + "/" for l in r.stdout.splitlines() if l.strip()]
-        parent = os.path.dirname((path or TERMUX_PREFIX + "/home").rstrip("/")) or "/"
-        return {"path": path, "parent": parent, "dirs": sorted(dirs)[:500]}

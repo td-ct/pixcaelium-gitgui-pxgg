@@ -1,0 +1,261 @@
+{
+ "patterns": [
+  {
+   "id": "merge_conflict",
+   "title_key": "err.merge_conflict.title",
+   "detail_key": "err.merge_conflict.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.resolve_conflicts",
+     "type": "workflow",
+     "workflow": "conflicts",
+     "params": {
+      "action": "list"
+     }
+    }
+   ],
+   "pattern": "Automatic merge failed|CONFLICT \\(|Merge conflict in|Unmerged paths"
+  },
+  {
+   "id": "divergent_branches",
+   "title_key": "err.divergent_branches.title",
+   "detail_key": "err.divergent_branches.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.pull_merge",
+     "type": "workflow",
+     "workflow": "pull",
+     "params": {}
+    },
+    {
+     "label_key": "sugg.pull_rebase",
+     "type": "workflow",
+     "workflow": "pull",
+     "params": {
+      "rebase": true
+     }
+    }
+   ],
+   "pattern": "Need to specify how to reconcile divergent branches|divergent branches"
+  },
+  {
+   "id": "dubious_ownership",
+   "title_key": "err.dubious_ownership.title",
+   "detail_key": "err.dubious_ownership.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.add_safe_directory",
+     "type": "workflow",
+     "workflow": "fix_safe_directory",
+     "params": {}
+    }
+   ],
+   "pattern": "dubious ownership"
+  },
+  {
+   "id": "local_changes_overwritten",
+   "title_key": "err.local_changes_overwritten.title",
+   "detail_key": "err.local_changes_overwritten.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.stash_changes",
+     "type": "workflow",
+     "workflow": "stash_push",
+     "params": {}
+    },
+    {
+     "label_key": "sugg.discard_changes",
+     "type": "exec",
+     "args": [
+      "checkout",
+      "--",
+      "."
+     ],
+     "danger": true
+    }
+   ],
+   "pattern": "would be overwritten by (merge|checkout|pull|rebase)|Your local changes"
+  },
+  {
+   "id": "need_commit_or_stash",
+   "title_key": "err.need_commit_or_stash.title",
+   "detail_key": "err.need_commit_or_stash.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.stash_changes",
+     "type": "workflow",
+     "workflow": "stash_push",
+     "params": {}
+    },
+    {
+     "label_key": "sugg.commit_changes",
+     "type": "workflow",
+     "workflow": "commit",
+     "params": {}
+    }
+   ],
+   "pattern": "Please commit your changes or stash them"
+  },
+  {
+   "id": "non_fast_forward",
+   "title_key": "err.non_fast_forward.title",
+   "detail_key": "err.non_fast_forward.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.pull_first",
+     "type": "workflow",
+     "workflow": "pull",
+     "params": {}
+    },
+    {
+     "label_key": "sugg.force_push",
+     "type": "workflow",
+     "workflow": "push",
+     "params": {
+      "force": true
+     },
+     "danger": true
+    }
+   ],
+   "pattern": "Updates were rejected|non-fast-forward|tip of your current branch is behind|fetch first"
+  },
+  {
+   "id": "auth_failed",
+   "title_key": "err.auth_failed.title",
+   "detail_key": "err.auth_failed.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.open_credentials",
+     "type": "open",
+     "target": "credentials"
+    }
+   ],
+   "pattern": "Authentication failed|could not read Username|Permission denied \\(publickey\\)|Invalid username or password|403|terminal prompts disabled"
+  },
+  {
+   "id": "repo_not_found",
+   "title_key": "err.repo_not_found.title",
+   "detail_key": "err.repo_not_found.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.open_credentials",
+     "type": "open",
+     "target": "credentials"
+    }
+   ],
+   "pattern": "Repository not found|fatal: repository .* not found|404"
+  },
+  {
+   "id": "not_a_repo",
+   "title_key": "err.not_a_repo.title",
+   "detail_key": "err.not_a_repo.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.select_repo",
+     "type": "open",
+     "target": "repo"
+    },
+    {
+     "label_key": "sugg.init_repo",
+     "type": "workflow",
+     "workflow": "init",
+     "params": {}
+    }
+   ],
+   "pattern": "not a git repository"
+  },
+  {
+   "id": "no_identity",
+   "title_key": "err.no_identity.title",
+   "detail_key": "err.no_identity.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.set_identity",
+     "type": "workflow",
+     "workflow": "set_identity",
+     "params": {}
+    }
+   ],
+   "pattern": "Please tell me who you are|empty ident|user\\.name|Committer identity unknown"
+  },
+  {
+   "id": "no_upstream",
+   "title_key": "err.no_upstream.title",
+   "detail_key": "err.no_upstream.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.push_set_upstream",
+     "type": "workflow",
+     "workflow": "push",
+     "params": {
+      "set_upstream": true
+     }
+    }
+   ],
+   "pattern": "no upstream|has no upstream branch|no tracking information|The current branch .* has no upstream"
+  },
+  {
+   "id": "branch_exists",
+   "title_key": "err.branch_exists.title",
+   "detail_key": "err.branch_exists.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.switch_to_branch",
+     "type": "workflow",
+     "workflow": "branch_switch",
+     "params": {}
+    }
+   ],
+   "pattern": "already exists"
+  },
+  {
+   "id": "branch_not_merged",
+   "title_key": "err.branch_not_merged.title",
+   "detail_key": "err.branch_not_merged.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.force_delete_branch",
+     "type": "workflow",
+     "workflow": "branch_delete",
+     "params": {
+      "force": true
+     },
+     "danger": true
+    }
+   ],
+   "pattern": "not fully merged|Cannot delete|not merged into"
+  },
+  {
+   "id": "unrelated_histories",
+   "title_key": "err.unrelated_histories.title",
+   "detail_key": "err.unrelated_histories.detail",
+   "suggestions": [
+    {
+     "label_key": "sugg.pull_allow_unrelated",
+     "type": "workflow",
+     "workflow": "pull",
+     "params": {
+      "allow_unrelated": true
+     }
+    }
+   ],
+   "pattern": "refusing to merge unrelated histories"
+  },
+  {
+   "id": "nothing_to_commit",
+   "title_key": "err.nothing_to_commit.title",
+   "detail_key": "err.nothing_to_commit.detail",
+   "suggestions": [],
+   "info": true,
+   "pattern": "nothing to commit|no changes added to commit"
+  },
+  {
+   "id": "already_up_to_date",
+   "title_key": "err.already_up_to_date.title",
+   "detail_key": "err.already_up_to_date.detail",
+   "suggestions": [],
+   "info": true,
+   "pattern": "Already up.to.date"
+  }
+ ]
+}

@@ -1,0 +1,338 @@
+{
+ "workflows": [
+  {
+   "id": "clone",
+   "title_key": "wf.clone.title",
+   "desc_key": "wf.clone.desc",
+   "params": [
+    {
+     "key": "url",
+     "type": "text",
+     "required": true,
+     "label_key": "wf.clone.param.url"
+    },
+    {
+     "key": "dir",
+     "type": "path",
+     "label_key": "wf.clone.param.dir"
+    }
+   ]
+  },
+  {
+   "id": "init",
+   "title_key": "wf.init.title",
+   "desc_key": "wf.init.desc",
+   "params": [
+    {
+     "key": "path",
+     "type": "path",
+     "label_key": "wf.init.param.path"
+    }
+   ]
+  },
+  {
+   "id": "status",
+   "title_key": "wf.status.title",
+   "desc_key": "wf.status.desc",
+   "params": []
+  },
+  {
+   "id": "commit",
+   "title_key": "wf.commit.title",
+   "desc_key": "wf.commit.desc",
+   "params": [
+    {
+     "key": "files",
+     "type": "files",
+     "required": true,
+     "label_key": "wf.commit.param.files"
+    },
+    {
+     "key": "message",
+     "type": "text",
+     "required": true,
+     "label_key": "wf.commit.param.message"
+    }
+   ]
+  },
+  {
+   "id": "pull",
+   "title_key": "wf.pull.title",
+   "desc_key": "wf.pull.desc",
+   "params": [
+    {
+     "key": "rebase",
+     "type": "bool",
+     "label_key": "wf.pull.param.rebase"
+    },
+    {
+     "key": "allow_unrelated",
+     "type": "bool",
+     "label_key": "wf.pull.param.allow_unrelated"
+    }
+   ]
+  },
+  {
+   "id": "push",
+   "title_key": "wf.push.title",
+   "desc_key": "wf.push.desc",
+   "params": [
+    {
+     "key": "set_upstream",
+     "type": "bool",
+     "label_key": "wf.push.param.set_upstream"
+    },
+    {
+     "key": "force",
+     "type": "bool",
+     "label_key": "wf.push.param.force",
+     "danger": true
+    }
+   ]
+  },
+  {
+   "id": "branch_list",
+   "title_key": "wf.branch_list.title",
+   "desc_key": "wf.branch_list.desc",
+   "params": []
+  },
+  {
+   "id": "branch_create",
+   "title_key": "wf.branch_create.title",
+   "desc_key": "wf.branch_create.desc",
+   "params": [
+    {
+     "key": "name",
+     "type": "text",
+     "required": true,
+     "label_key": "wf.branch_create.param.name"
+    },
+    {
+     "key": "start_point",
+     "type": "text",
+     "complete": "branch",
+     "label_key": "wf.branch_create.param.start_point"
+    }
+   ]
+  },
+  {
+   "id": "branch_switch",
+   "title_key": "wf.branch_switch.title",
+   "desc_key": "wf.branch_switch.desc",
+   "params": [
+    {
+     "key": "name",
+     "type": "text",
+     "required": true,
+     "complete": "branch",
+     "label_key": "wf.branch_switch.param.name"
+    }
+   ]
+  },
+  {
+   "id": "branch_delete",
+   "title_key": "wf.branch_delete.title",
+   "desc_key": "wf.branch_delete.desc",
+   "params": [
+    {
+     "key": "name",
+     "type": "text",
+     "required": true,
+     "complete": "branch",
+     "label_key": "wf.branch_delete.param.name"
+    },
+    {
+     "key": "force",
+     "type": "bool",
+     "label_key": "wf.branch_delete.param.force",
+     "danger": true
+    }
+   ]
+  },
+  {
+   "id": "merge",
+   "title_key": "wf.merge.title",
+   "desc_key": "wf.merge.desc",
+   "params": [
+    {
+     "key": "branch",
+     "type": "text",
+     "required": true,
+     "complete": "branch",
+     "label_key": "wf.merge.param.branch"
+    }
+   ]
+  },
+  {
+   "id": "conflicts",
+   "title_key": "wf.conflicts.title",
+   "desc_key": "wf.conflicts.desc",
+   "params": [
+    {
+     "key": "action",
+     "type": "select",
+     "required": true,
+     "label_key": "wf.conflicts.param.action",
+     "options": [
+      "list",
+      "resolve",
+      "continue",
+      "abort"
+     ]
+    },
+    {
+     "key": "file",
+     "type": "text",
+     "complete": "file",
+     "label_key": "wf.conflicts.param.file"
+    }
+   ]
+  },
+  {
+   "id": "stash_push",
+   "title_key": "wf.stash_push.title",
+   "desc_key": "wf.stash_push.desc",
+   "params": [
+    {
+     "key": "message",
+     "type": "text",
+     "label_key": "wf.stash_push.param.message"
+    },
+    {
+     "key": "include_untracked",
+     "type": "bool",
+     "label_key": "wf.stash_push.param.include_untracked"
+    }
+   ]
+  },
+  {
+   "id": "stash_list",
+   "title_key": "wf.stash_list.title",
+   "desc_key": "wf.stash_list.desc",
+   "params": []
+  },
+  {
+   "id": "stash_pop",
+   "title_key": "wf.stash_pop.title",
+   "desc_key": "wf.stash_pop.desc",
+   "params": [
+    {
+     "key": "index",
+     "type": "int",
+     "label_key": "wf.stash_pop.param.index"
+    }
+   ]
+  },
+  {
+   "id": "log",
+   "title_key": "wf.log.title",
+   "desc_key": "wf.log.desc",
+   "params": [
+    {
+     "key": "n",
+     "type": "int",
+     "label_key": "wf.log.param.n"
+    },
+    {
+     "key": "graph",
+     "type": "bool",
+     "label_key": "wf.log.param.graph"
+    }
+   ]
+  },
+  {
+   "id": "diff",
+   "title_key": "wf.diff.title",
+   "desc_key": "wf.diff.desc",
+   "params": [
+    {
+     "key": "staged",
+     "type": "bool",
+     "label_key": "wf.diff.param.staged"
+    },
+    {
+     "key": "file",
+     "type": "text",
+     "complete": "file",
+     "label_key": "wf.diff.param.file"
+    }
+   ]
+  },
+  {
+   "id": "remote_list",
+   "title_key": "wf.remote_list.title",
+   "desc_key": "wf.remote_list.desc",
+   "params": []
+  },
+  {
+   "id": "remote_add",
+   "title_key": "wf.remote_add.title",
+   "desc_key": "wf.remote_add.desc",
+   "params": [
+    {
+     "key": "name",
+     "type": "text",
+     "required": true,
+     "label_key": "wf.remote_add.param.name"
+    },
+    {
+     "key": "url",
+     "type": "text",
+     "required": true,
+     "label_key": "wf.remote_add.param.url"
+    }
+   ]
+  },
+  {
+   "id": "remote_remove",
+   "title_key": "wf.remote_remove.title",
+   "desc_key": "wf.remote_remove.desc",
+   "params": [
+    {
+     "key": "name",
+     "type": "text",
+     "required": true,
+     "complete": "remote",
+     "label_key": "wf.remote_remove.param.name"
+    }
+   ]
+  },
+  {
+   "id": "set_identity",
+   "title_key": "wf.set_identity.title",
+   "desc_key": "wf.set_identity.desc",
+   "params": [
+    {
+     "key": "name",
+     "type": "text",
+     "required": true,
+     "label_key": "wf.set_identity.param.name"
+    },
+    {
+     "key": "email",
+     "type": "text",
+     "required": true,
+     "label_key": "wf.set_identity.param.email"
+    }
+   ]
+  },
+  {
+   "id": "fix_safe_directory",
+   "title_key": "wf.fix_safe_directory.title",
+   "desc_key": "wf.fix_safe_directory.desc",
+   "params": [
+    {
+     "key": "path",
+     "type": "path",
+     "label_key": "wf.fix_safe_directory.param.path"
+    }
+   ]
+  },
+  {
+   "id": "undo_last_commit",
+   "title_key": "wf.undo_last_commit.title",
+   "desc_key": "wf.undo_last_commit.desc",
+   "params": []
+  }
+ ]
+}

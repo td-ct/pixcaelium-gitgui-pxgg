@@ -1,0 +1,58 @@
+{
+  "categories": [
+    {"id": "basics", "label_key": "cat.basics", "commands": [
+      {"name": "init", "args": [{"key": "path", "type": "path", "label_key": "arg.path"}]},
+      {"name": "clone", "args": [{"key": "url", "type": "text", "required": true, "label_key": "arg.url"}, {"key": "dir", "type": "path", "label_key": "arg.dir"}, {"key": "depth", "type": "text", "flag": "--depth", "label_key": "arg.depth"}]},
+      {"name": "status", "args": [{"key": "short", "type": "flag", "flag": "-s", "label_key": "arg.short"}, {"key": "branch", "type": "flag", "flag": "-b", "label_key": "arg.branch_info"}]},
+      {"name": "add", "args": [{"key": "paths", "type": "text", "complete": "file", "multi": true, "required": true, "label_key": "arg.paths"}, {"key": "all", "type": "flag", "flag": "-A", "label_key": "arg.all"}, {"key": "patch", "type": "flag", "flag": "-p", "label_key": "arg.patch"}]},
+      {"name": "commit", "args": [{"key": "message", "type": "text", "flag": "-m", "required": true, "label_key": "arg.message"}, {"key": "all", "type": "flag", "flag": "-a", "label_key": "arg.all"}, {"key": "amend", "type": "flag", "flag": "--amend", "label_key": "arg.amend"}]},
+      {"name": "restore", "args": [{"key": "paths", "type": "text", "complete": "file", "multi": true, "label_key": "arg.paths"}, {"key": "staged", "type": "flag", "flag": "--staged", "label_key": "arg.staged"}, {"key": "source", "type": "text", "complete": "branch", "flag": "--source", "label_key": "arg.source"}]},
+      {"name": "rm", "args": [{"key": "paths", "type": "text", "complete": "file", "multi": true, "label_key": "arg.paths"}, {"key": "cached", "type": "flag", "flag": "--cached", "label_key": "arg.cached"}, {"key": "force", "type": "flag", "flag": "-f", "label_key": "arg.force"}]},
+      {"name": "mv", "args": [{"key": "src", "type": "text", "complete": "file", "required": true, "label_key": "arg.src"}, {"key": "dst", "type": "text", "complete": "path", "required": true, "label_key": "arg.dst"}]}
+    ]},
+    {"id": "branch", "label_key": "cat.branch", "commands": [
+      {"name": "branch", "args": [{"key": "name", "type": "text", "complete": "branch", "label_key": "arg.name"}, {"key": "delete", "type": "flag", "flag": "-d", "label_key": "arg.delete"}, {"key": "force", "type": "flag", "flag": "-D", "label_key": "arg.force"}, {"key": "all", "type": "flag", "flag": "-a", "label_key": "arg.all"}, {"key": "move", "type": "text", "flag": "-m", "complete": "branch", "label_key": "arg.move"}]},
+      {"name": "checkout", "args": [{"key": "branch", "type": "text", "complete": "branch", "label_key": "arg.branch"}, {"key": "paths", "type": "text", "complete": "file", "multi": true, "label_key": "arg.paths"}, {"key": "create", "type": "flag", "flag": "-b", "label_key": "arg.create_branch"}]},
+      {"name": "switch", "args": [{"key": "branch", "type": "text", "complete": "branch", "required": true, "label_key": "arg.branch"}, {"key": "create", "type": "flag", "flag": "-c", "label_key": "arg.create_branch"}]},
+      {"name": "merge", "args": [{"key": "branch", "type": "text", "complete": "branch", "required": true, "label_key": "arg.branch"}, {"key": "no_ff", "type": "flag", "flag": "--no-ff", "label_key": "arg.no_ff"}, {"key": "abort", "type": "flag", "flag": "--abort", "label_key": "arg.abort"}, {"key": "message", "type": "text", "flag": "-m", "label_key": "arg.message"}]},
+      {"name": "rebase", "args": [{"key": "upstream", "type": "text", "complete": "branch", "label_key": "arg.upstream"}, {"key": "interactive", "type": "flag", "flag": "-i", "label_key": "arg.interactive"}, {"key": "onto", "type": "text", "complete": "branch", "flag": "--onto", "label_key": "arg.onto"}]},
+      {"name": "cherry-pick", "args": [{"key": "commits", "type": "text", "complete": "branch", "multi": true, "required": true, "label_key": "arg.commits"}, {"key": "no_commit", "type": "flag", "flag": "-n", "label_key": "arg.no_commit"}]},
+      {"name": "tag", "args": [{"key": "name", "type": "text", "label_key": "arg.name"}, {"key": "delete", "type": "flag", "flag": "-d", "label_key": "arg.delete"}, {"key": "annotate", "type": "flag", "flag": "-a", "label_key": "arg.annotate"}, {"key": "message", "type": "text", "flag": "-m", "label_key": "arg.message"}]}
+    ]},
+    {"id": "remote", "label_key": "cat.remote", "commands": [
+      {"name": "fetch", "args": [{"key": "remote", "type": "text", "complete": "remote", "label_key": "arg.remote"}, {"key": "all", "type": "flag", "flag": "--all", "label_key": "arg.all"}, {"key": "prune", "type": "flag", "flag": "--prune", "label_key": "arg.prune"}]},
+      {"name": "pull", "args": [{"key": "remote", "type": "text", "complete": "remote", "label_key": "arg.remote"}, {"key": "branch", "type": "text", "complete": "branch", "label_key": "arg.branch"}, {"key": "rebase", "type": "flag", "flag": "--rebase", "label_key": "arg.rebase"}, {"key": "ff_only", "type": "flag", "flag": "--ff-only", "label_key": "arg.ff_only"}]},
+      {"name": "push", "args": [{"key": "remote", "type": "text", "complete": "remote", "label_key": "arg.remote"}, {"key": "branch", "type": "text", "complete": "branch", "label_key": "arg.branch"}, {"key": "force_lease", "type": "flag", "flag": "--force-with-lease", "label_key": "arg.force_lease"}, {"key": "set_upstream", "type": "flag", "flag": "-u", "label_key": "arg.set_upstream"}, {"key": "tags", "type": "flag", "flag": "--tags", "label_key": "arg.tags"}]},
+      {"name": "remote", "args": [{"key": "subcmd", "type": "text", "label_key": "arg.subcmd"}, {"key": "name", "type": "text", "complete": "remote", "label_key": "arg.name"}, {"key": "url", "type": "text", "label_key": "arg.url"}, {"key": "verbose", "type": "flag", "flag": "-v", "label_key": "arg.verbose"}]},
+      {"name": "ls-remote", "args": [{"key": "remote", "type": "text", "complete": "remote", "label_key": "arg.remote"}, {"key": "heads", "type": "flag", "flag": "--heads", "label_key": "arg.heads"}]}
+    ]},
+    {"id": "inspect", "label_key": "cat.inspect", "commands": [
+      {"name": "log", "args": [{"key": "n", "type": "text", "flag": "-n", "label_key": "arg.count"}, {"key": "oneline", "type": "flag", "flag": "--oneline", "label_key": "arg.oneline"}, {"key": "graph", "type": "flag", "flag": "--graph", "label_key": "arg.graph"}, {"key": "all", "type": "flag", "flag": "--all", "label_key": "arg.all"}, {"key": "path", "type": "text", "complete": "file", "label_key": "arg.path"}]},
+      {"name": "diff", "args": [{"key": "staged", "type": "flag", "flag": "--cached", "label_key": "arg.staged"}, {"key": "commit", "type": "text", "complete": "branch", "label_key": "arg.commit"}, {"key": "path", "type": "text", "complete": "file", "label_key": "arg.path"}]},
+      {"name": "show", "args": [{"key": "object", "type": "text", "complete": "branch", "label_key": "arg.object"}, {"key": "stat", "type": "flag", "flag": "--stat", "label_key": "arg.stat"}]},
+      {"name": "blame", "args": [{"key": "file", "type": "text", "complete": "file", "required": true, "label_key": "arg.file"}]},
+      {"name": "shortlog", "args": [{"key": "numbered", "type": "flag", "flag": "-n", "label_key": "arg.numbered"}, {"key": "summary", "type": "flag", "flag": "-s", "label_key": "arg.summary"}]},
+      {"name": "describe", "args": [{"key": "tags", "type": "flag", "flag": "--tags", "label_key": "arg.tags"}, {"key": "dirty", "type": "flag", "flag": "--dirty", "label_key": "arg.dirty"}]}
+    ]},
+    {"id": "stash", "label_key": "cat.stash", "commands": [
+      {"name": "stash", "args": [{"key": "subcmd", "type": "text", "label_key": "arg.subcmd"}, {"key": "message", "type": "text", "flag": "-m", "label_key": "arg.message"}, {"key": "untracked", "type": "flag", "flag": "-u", "label_key": "arg.untracked"}, {"key": "stash_ref", "type": "text", "label_key": "arg.stash_ref"}]}
+    ]},
+    {"id": "undo", "label_key": "cat.undo", "commands": [
+      {"name": "reset", "args": [{"key": "mode", "type": "text", "label_key": "arg.mode"}, {"key": "target", "type": "text", "complete": "branch", "label_key": "arg.target"}]},
+      {"name": "revert", "args": [{"key": "commit", "type": "text", "complete": "branch", "required": true, "label_key": "arg.commit"}, {"key": "no_commit", "type": "flag", "flag": "-n", "label_key": "arg.no_commit"}]},
+      {"name": "clean", "args": [{"key": "dirs", "type": "flag", "flag": "-d", "label_key": "arg.dirs"}, {"key": "force", "type": "flag", "flag": "-f", "label_key": "arg.force"}, {"key": "dry", "type": "flag", "flag": "-n", "label_key": "arg.dry_run"}]}
+    ]},
+    {"id": "config", "label_key": "cat.config", "commands": [
+      {"name": "config", "args": [{"key": "key", "type": "text", "label_key": "arg.key"}, {"key": "value", "type": "text", "label_key": "arg.value"}, {"key": "global", "type": "flag", "flag": "--global", "label_key": "arg.global"}, {"key": "list", "type": "flag", "flag": "--list", "label_key": "arg.list"}]},
+      {"name": "credential", "args": [{"key": "subcmd", "type": "text", "label_key": "arg.subcmd"}, {"key": "helper", "type": "text", "label_key": "arg.helper"}]}
+    ]},
+    {"id": "advanced", "label_key": "cat.advanced", "commands": [
+      {"name": "submodule", "args": [{"key": "subcmd", "type": "text", "label_key": "arg.subcmd"}, {"key": "path", "type": "text", "complete": "file", "label_key": "arg.path"}, {"key": "url", "type": "text", "label_key": "arg.url"}]},
+      {"name": "worktree", "args": [{"key": "subcmd", "type": "text", "label_key": "arg.subcmd"}, {"key": "path", "type": "path", "label_key": "arg.path"}, {"key": "branch", "type": "text", "complete": "branch", "label_key": "arg.branch"}]},
+      {"name": "bisect", "args": [{"key": "subcmd", "type": "text", "label_key": "arg.subcmd"}, {"key": "ref", "type": "text", "complete": "branch", "label_key": "arg.ref"}]},
+      {"name": "archive", "args": [{"key": "format", "type": "text", "flag": "--format", "label_key": "arg.format"}, {"key": "output", "type": "path", "flag": "-o", "label_key": "arg.output"}, {"key": "ref", "type": "text", "complete": "branch", "label_key": "arg.ref"}]},
+      {"name": "bundle", "args": [{"key": "file", "type": "path", "label_key": "arg.file"}, {"key": "subcmd", "type": "text", "label_key": "arg.subcmd"}, {"key": "ref", "type": "text", "complete": "branch", "label_key": "arg.ref"}]},
+      {"name": "gc", "args": [{"key": "aggressive", "type": "flag", "flag": "--aggressive", "label_key": "arg.aggressive"}, {"key": "prune", "type": "flag", "flag": "--prune=now", "label_key": "arg.prune_now"}]}
+    ]}
+  ]
+}

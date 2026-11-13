@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gitgui</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <span class="brand">gitgui</span>
+  <label><span data-i18n="ui.repo">Repository</span>
+    <select id="repo-select"></select>
+  </label>
+  <button id="repo-add-btn" data-i18n="ui.add_repo">+ repo</button>
+  <span class="spacer"></span>
+  <button id="cred-btn" data-i18n="ui.credentials">Credentials</button>
+  <button id="preflight-btn" data-i18n="ui.preflight">System check</button>
+  <label><span data-i18n="ui.language">Language</span>
+    <select id="lang-select"></select>
+  </label>
+  <nav class="tabs">
+    <button id="tab-guided" class="tab active" data-i18n="ui.tab.guided">Guided</button>
+    <button id="tab-pro" class="tab" data-i18n="ui.tab.pro">All commands</button>
+  </nav>
+</header>
+
+<main>
+  <section id="view-guided" class="view active">
+    <div id="workflow-cards" class="cards"></div>
+  </section>
+
+  <section id="view-pro" class="view">
+    <div class="pro-layout">
+      <aside id="cmd-tree"></aside>
+      <div class="pro-main">
+        <div id="cmd-form"></div>
+        <div id="pro-output" class="output hidden"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="man-panel" class="side-panel hidden">
+  <div class="side-head">
+    <strong id="man-title">man</strong>
+    <input id="man-search" type="search" data-i18n-ph="ui.search_man" placeholder="filter">
+    <button id="man-close" data-i18n="ui.close">Close</button>
+  </div>
+  <pre id="man-text"></pre>
+</div>
+
+<div id="cred-modal" class="modal hidden">
+  <div class="modal-box">
+    <h3 data-i18n="ui.credentials">Credentials</h3>
+    <p class="hint" data-i18n="ui.cred_hint">Stored locally in git-credential-store format; used via credential.helper for all commands run by this app.</p>
+    <table id="cred-table"></table>
+    <div class="cred-form">
+      <select id="cred-proto"><option>https</option><option>http</option><option>ssh</option></select>
+      <input id="cred-host" data-i18n-ph="ui.host" placeholder="host">
+      <input id="cred-user" data-i18n-ph="ui.username" placeholder="username">
+      <input id="cred-pass" type="password" data-i18n-ph="ui.password" placeholder="password / token">
+      <button id="cred-save" data-i18n="ui.save">Save</button>
+    </div>
+    <button id="cred-close" data-i18n="ui.close">Close</button>
+  </div>
+</div>
+
+<div id="browse-modal" class="modal hidden">
+  <div class="modal-box">
+    <h3 data-i18n="ui.add_repo">Add repository</h3>
+    <div class="browse-bar">
+      <input id="browse-path" type="text">
+      <button id="browse-up">..</button>
+      <button id="browse-go" data-i18n="ui.browse">Browse</button>
+      <button id="browse-select" data-i18n="ui.select_here">Select here</button>
+    </div>
+    <ul id="browse-list"></ul>
+    <button id="browse-close" data-i18n="ui.close">Close</button>
+  </div>
+</div>
+
+<div id="term-drawer">
+  <div id="term-bar"><span id="term-last"></span><span class="term-hint" data-i18n="ui.terminal_hint">▲ terminal</span></div>
+  <pre id="term-log" class="hidden"></pre>
+</div>
+
+<div id="busy" class="hidden">
+  <div class="busy-box">
+    <div class="hourglass">⏳</div>
+    <div data-i18n="ui.busy">Running…</div>
+    <button id="busy-stop" class="danger" data-i18n="ui.stop">Stop</button>
+  </div>
+</div>
+
+<div id="preflight-modal" class="modal hidden">
+  <div class="modal-box">
+    <h3 data-i18n="ui.preflight">System check</h3>
+    <div id="preflight-list"></div>
+    <div class="actions">
+      <button id="preflight-install" class="primary hidden" data-i18n="ui.install_missing">Install missing in Termux</button>
+      <button id="preflight-refresh" data-i18n="ui.check_again">Check again</button>
+      <button id="preflight-close" data-i18n="ui.close">Close</button>
+    </div>
+    <pre id="preflight-output" class="hidden"></pre>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

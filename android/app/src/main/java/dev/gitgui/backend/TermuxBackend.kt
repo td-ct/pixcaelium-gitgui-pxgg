@@ -123,14 +123,14 @@ class TermuxBackend(private val context: Context) : Backend {
             shopt -s progcomp 2>/dev/null
             COMP_WORDBREAKS=" "
             for f in "$PREFIX/share/bash-completion/completions/git" "$PREFIX/share/git-core/git-completion.bash" /usr/share/bash-completion/completions/git; do
-              if [ -f "$$f" ]; then source "$$f" 2>/dev/null; break; fi
+              if [ -f "${'$'}f" ]; then source "${'$'}f" 2>/dev/null; break; fi
             done
             COMP_WORDS=($arr)
             COMP_CWORD=$cword
             COMP_LINE="${words.joinToString(" ")}"
             COMP_POINT=${'$'}{#COMP_LINE}
             words=("${'$'}{COMP_WORDS[@]}")
-            cword=$COMP_CWORD
+            cword=${'$'}COMP_CWORD
             cur="${'$'}{words[cword]}"
             prev="${'$'}{words[cword-1]}"
             COMPREPLY=()

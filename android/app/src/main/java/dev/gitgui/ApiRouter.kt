@@ -2,6 +2,7 @@ package dev.gitgui
 
 import android.content.Context
 import dev.gitgui.backend.Backend
+import dev.gitgui.backend.ExecResult
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLDecoder

@@ -14,7 +14,6 @@ import android.webkit.WebViewClient
 import dev.gitgui.backend.Backend
 import dev.gitgui.backend.HttpBackend
 import dev.gitgui.backend.TermuxBackend
-import org.json.JSONObject
 
 class MainActivity : Activity() {
 

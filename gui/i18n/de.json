@@ -38,7 +38,6 @@
   "pf.termux_connection": "Verbindung zu Termux (RUN_COMMAND)",
   "pf.allow_external_apps": "allow-external-apps = true in ~/.termux/termux.properties",
   "pf.storage": "Termux Speicherzugriff / Akku-Optimierung",
-
   "cat.basics": "Grundlagen",
   "cat.branch": "Branches & Mergen",
   "cat.remote": "Remotes",
@@ -47,7 +46,6 @@
   "cat.undo": "Rückgängig",
   "cat.config": "Config & Zugangsdaten",
   "cat.advanced": "Erweitert",
-
   "cmd.init": "Leeres Repository erzeugen",
   "cmd.clone": "Repository in neues Verzeichnis klonen",
   "cmd.status": "Status des Arbeitsverzeichnisses anzeigen",
@@ -86,7 +84,6 @@
   "cmd.archive": "Archiv aus Dateien eines Trees erzeugen",
   "cmd.bundle": "Objekte und Referenzen per Archiv verschieben",
   "cmd.gc": "Repository bereinigen und optimieren",
-
   "arg.path": "Pfad",
   "arg.paths": "Pfade",
   "arg.url": "URL",
@@ -150,7 +147,6 @@
   "arg.prune_now": "jetzt prune",
   "arg.stash_ref": "Stash-Ref (z. B. stash@{1})",
   "arg.untracked": "untrackte einschließen",
-
   "wf.clone.title": "Repository klonen",
   "wf.clone.desc": "Remote-Repository in ein lokales Verzeichnis laden.",
   "wf.clone.param.url": "Repository-URL",
@@ -227,12 +223,10 @@
   "wf.fix_safe_directory.param.path": "Pfad (Standard: aktuelles Repo, '*' für alle)",
   "wf.undo_last_commit.title": "Letzten Commit rückgängig",
   "wf.undo_last_commit.desc": "Auf vorherigen Commit zurücksetzen, Änderungen bleiben gestaged.",
-
   "wfopt.conflicts.action.list": "Konfliktdateien auflisten",
   "wfopt.conflicts.action.resolve": "Datei als gelöst markieren (git add)",
   "wfopt.conflicts.action.continue": "Merge fortsetzen (committen)",
   "wfopt.conflicts.action.abort": "Merge abbrechen",
-
   "err.merge_conflict.title": "Merge-Konflikt",
   "err.merge_conflict.detail": "Automatisches Mergen fehlgeschlagen — einige Dateien haben Konflikte. Löse sie, markiere sie mit „git add“ und fahre fort (oder brich ab).",
   "err.divergent_branches.title": "Divergierte Branches",
@@ -267,7 +261,6 @@
   "err.already_up_to_date.detail": "Alles ist bereits synchronisiert.",
   "err.unknown_workflow.title": "Unbekannter Workflow",
   "err.unknown_workflow.detail": "Dieser Workflow existiert nicht.",
-
   "sugg.resolve_conflicts": "Konflikte lösen",
   "sugg.pull_merge": "Pull mit Merge",
   "sugg.pull_rebase": "Pull mit Rebase",
@@ -284,5 +277,6 @@
   "sugg.push_set_upstream": "Mit Upstream pushen",
   "sugg.switch_to_branch": "Zum Branch wechseln",
   "sugg.force_delete_branch": "Branch löschen erzwingen",
-  "sugg.pull_allow_unrelated": "Pull mit unverwandten Historien"
+  "sugg.pull_allow_unrelated": "Pull mit unverwandten Historien",
+  "ui.system_picker": "System-Dialog"
 }

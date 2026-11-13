@@ -54,8 +54,8 @@ async function api(path, opts) {
   opts = opts || {};
   if (window.GitguiBridge) {
     const res = JSON.parse(window.GitguiBridge.call(opts.method || "GET", "/api" + path, opts.body || null));
-    const data = res.data;
     if (!res) throw new Error("bridge returned null (backend error)");
+    const data = res.data;
     if (res.status >= 400) throw new Error((data && data.error) || ("HTTP " + res.status));
     return data;
   }
@@ -509,9 +509,28 @@ async function renderCredTable() {
   } catch (e) { /* ignore */ }
 }
 
-$("#repo-add-btn").onclick = () => { $("#browse-path").value = S.repo || ""; browseList(S.repo || ""); $("#browse-modal").classList.remove("hidden"); };
+function selectRepoPath(p) {
+  if (!p) return;
+  api("/repos/add", { method: "POST", body: JSON.stringify({ path: p }) }).then(loadRepos).catch(() => {});
+  $("#repo-select").value = p;
+  $("#repo-select").onchange({ target: { value: p } });
+}
+
+function pickNativeDir() {
+  if (window.GitguiBridge && window.GitguiBridge.pickDir) {
+    window.gitguiPicked = (p) => { if (p) { $("#browse-modal").classList.add("hidden"); selectRepoPath(p); logTerm("picked: " + p + "\n"); } };
+    try { window.GitguiBridge.pickDir(); return true; } catch (e) { logTerm("native picker failed: " + e.message + "\n"); }
+  }
+  return false;
+}
+
+$("#repo-add-btn").onclick = () => {
+  if (pickNativeDir()) return;
+  $("#browse-path").value = S.repo || ""; browseList(S.repo || ""); $("#browse-modal").classList.remove("hidden");
+};
 $("#browse-close").onclick = () => $("#browse-modal").classList.add("hidden");
 $("#browse-go").onclick = () => browseList($("#browse-path").value);
+$("#browse-sys").onclick = () => { if (pickNativeDir()) $("#browse-modal").classList.add("hidden"); };
 $("#browse-up").onclick = () => { const d = $("#browse-path").value; $("#browse-path").value = d.replace(/\/[^/]*\/?$/, "") || "/"; browseList($("#browse-path").value); };
 $("#browse-select").onclick = async () => {
   const p = $("#browse-path").value;

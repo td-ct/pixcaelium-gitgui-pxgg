@@ -136,6 +136,14 @@ class TermuxBackend(Backend):
             self.raw(["pkill", "-KILL", "-f", "gitgui-job-%s" % job_id], timeout=15)
         return True
 
+    def list_dirs(self, path):
+        base = path or TERMUX_PREFIX + "/home"
+        script = 'ls -1 -d "%s"/*/ 2>/dev/null || true' % base
+        r = self._am(script, base, 30)
+        dirs = sorted({ln.strip().rstrip("/").split("/")[-1] + "/" for ln in r.stdout.splitlines() if ln.strip()})[:500]
+        parent = base.rstrip("/").rsplit("/", 1)[0] or "/"
+        return {"path": base, "parent": parent, "dirs": dirs}
+
     def complete(self, repo, words, cword):
         script = completion.build_completion_script(words, cword)
         r = self._am(script, repo or TERMUX_PREFIX + "/home", 30)

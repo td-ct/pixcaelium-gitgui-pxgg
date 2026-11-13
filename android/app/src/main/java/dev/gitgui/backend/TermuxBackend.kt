@@ -160,7 +160,7 @@ class TermuxBackend(private val context: Context) : Backend {
 
     override fun listDirs(path: String?): Map<String, Any?> {
         val p = path ?: "$PREFIX/home"
-        val r = run(null, listOf("ls", "-1", "-d", "$p/*/"), 30)
+        val r = raw(listOf("bash", "-c", "ls -1 -d -- \\"$p\\"/*/ 2>/dev/null || true"), p, 30)
         val dirs = r.stdout.lineSequence().map { it.trim().trimEnd('/').substringAfterLast('/') + "/" }.filter { it != "/" }.sorted().take(500).toList()
         return mapOf("path" to p, "parent" to p.trimEnd('/').substringBeforeLast('/', "/"), "dirs" to dirs)
     }

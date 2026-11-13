@@ -55,6 +55,7 @@ async function api(path, opts) {
   if (window.GitguiBridge) {
     const res = JSON.parse(window.GitguiBridge.call(opts.method || "GET", "/api" + path, opts.body || null));
     const data = res.data;
+    if (!res) throw new Error("bridge returned null (backend error)");
     if (res.status >= 400) throw new Error((data && data.error) || ("HTTP " + res.status));
     return data;
   }
@@ -575,7 +576,12 @@ $("#preflight-install").onclick = async () => {
 async function runPreflight() {
   const btn = $("#preflight-btn");
   try {
-    const pf = await api("/preflight");
+    let pf = await api("/preflight");
+    for (let i = 0; pf && pf.running && i < 90; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+      pf = await api("/preflight");
+    }
+    if (!pf) throw new Error("empty preflight response");
     S.backend = pf.backend;
     const list = $("#preflight-list");
     list.innerHTML = "";
@@ -605,12 +611,20 @@ async function runPreflight() {
   }
 }
 
+window.onerror = (msg, src, line) => {
+  try { logTerm("JS error: " + msg + " (" + String(src || "").split("/").pop() + ":" + line + ")\n"); } catch (e) {}
+};
+
 (async function init() {
-  await loadMeta();
-  await loadI18n();
-  await loadRepos();
-  await loadWorkflows();
-  await loadCatalog();
-  runPreflight();
+  $("#busy").classList.add("hidden");
+  const step = async (name, fn) => {
+    try { await fn(); } catch (e) { logTerm("init " + name + " failed: " + (e && e.message) + "\n"); }
+  };
+  await step("meta", loadMeta);
+  await step("i18n", loadI18n);
+  await step("repos", loadRepos);
+  await step("workflows", loadWorkflows);
+  await step("catalog", loadCatalog);
   logTerm("gitgui ready — backend: " + S.backend + "\n");
+  setTimeout(() => { try { runPreflight(); } catch (e) { logTerm("preflight failed: " + e.message + "\n"); } }, 400);
 })();

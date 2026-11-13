@@ -102,7 +102,45 @@ object ApiRouter {
                 path == "/api/stop" && method == "POST" ->
                     200 to JSONObject().put("stopped", backend.stop(json.optString("job_id"))).toString()
 
-                path == "/api/preflight" -> {
+                path == "/api/preflight" -> preflightResponse(backend)
+
+
+                
+path == "/api/preflight/install" && method == "POST" -> {
+                    val pkgs = json.getJSONArray("packages")
+                    val list = (0 until pkgs.length()).map { pkgs.getString(it) }
+                    val r = if (backend.name == "termux") backend.raw(listOf("pkg", "install", "-y") + list, timeoutSec = 600)
+                            else ExecResult(1, "", "apt install ${list.joinToString(" ")}")
+                    200 to JSONObject().put("ok", r.exitCode == 0).put("output", (r.stdout + r.stderr).takeLast(4000)).toString()
+                }
+
+                else -> 404 to JSONObject().put("error", "unknown endpoint").toString()
+            }
+        } catch (e: Exception) {
+            500 to JSONObject().put("error", e.message ?: "error").toString()
+        }
+    }
+    private val preflightLock = java.util.concurrent.atomic.AtomicBoolean(false)
+    private var preflightCache: String? = null
+    private var preflightCacheTs = 0L
+    private fun preflightResponse(backend: Backend): Pair<Int, String> {
+        val c = preflightCache
+        if (c != null && System.currentTimeMillis() - preflightCacheTs < 60_000) return 200 to c
+        if (preflightLock.compareAndSet(false, true)) {
+            Thread {
+                try {
+                    val r = computePreflight(backend)
+                    preflightCache = r
+                    preflightCacheTs = System.currentTimeMillis()
+                } catch (e: Exception) {
+                    preflightCache = JSONObject().put("backend", backend.name).put("ok", false).put("checks", JSONArray()).put("error", e.message ?: "?").toString()
+                    preflightCacheTs = System.currentTimeMillis()
+                } finally { preflightLock.set(false) }
+            }.start()
+        }
+        return 200 to JSONObject().put("backend", backend.name).put("ok", true).put("running", true).put("checks", JSONArray()).toString()
+    }
+    private fun computePreflight(backend: Backend): String {
                     val checks = JSONArray()
                     fun add(id: String, label: String, ok: Boolean, detail: String = "", install: String? = null, optional: Boolean = false) {
                         val o = JSONObject().put("id", id).put("label_key", label).put("ok", ok)
@@ -119,28 +157,14 @@ object ApiRouter {
                     val mn = backend.raw(listOf("bash", "-c", "command -v man || true"))
                     add("man", "pf.man", mn.stdout.isNotBlank(), mn.stdout.trim(), optional = true)
                     if (backend.name == "termux") {
-                        val ping = backend.raw(listOf("echo", "ok"), timeoutSec = 20)
+                        val ping = backend.raw(listOf("echo", "ok"), timeoutSec = 12)
                         add("termux_connection", "pf.termux_connection", ping.exitCode == 0 && ping.stdout.trim() == "ok", ping.stderr.trim().take(200))
                         val props = backend.raw(listOf("bash", "-c", "grep -Eq '^allow-external-apps[[:space:]]*=[[:space:]]*true' \"\$HOME/.termux/termux.properties\" && echo yes || echo no"))
                         add("allow_external_apps", "pf.allow_external_apps", props.stdout.trim() == "yes", if (props.stdout.trim() != "yes") "setze allow-external-apps = true in ~/.termux/termux.properties" else "")
                         add("storage", "pf.storage", true, "Termux braucht Storage-Zugriff fuer /storage/emulated/0; Akku-Optimierung abschalten", optional = true)
                     }
                     val okAll = (0 until checks.length()).all { checks.getJSONObject(it).getBoolean("ok") || checks.getJSONObject(it).getBoolean("optional") }
-                    200 to JSONObject().put("backend", backend.name).put("ok", okAll).put("checks", checks).toString()
-                }
-
-                path == "/api/preflight/install" && method == "POST" -> {
-                    val pkgs = json.getJSONArray("packages")
-                    val list = (0 until pkgs.length()).map { pkgs.getString(it) }
-                    val r = if (backend.name == "termux") backend.raw(listOf("pkg", "install", "-y") + list, timeoutSec = 600)
-                            else ExecResult(1, "", "apt install ${list.joinToString(" ")}")
-                    200 to JSONObject().put("ok", r.exitCode == 0).put("output", (r.stdout + r.stderr).takeLast(4000)).toString()
-                }
-
-                else -> 404 to JSONObject().put("error", "unknown endpoint").toString()
-            }
-        } catch (e: Exception) {
-            500 to JSONObject().put("error", e.message ?: "error").toString()
-        }
+                    return JSONObject().put("backend", backend.name).put("ok", okAll).put("checks", checks).toString()
     }
+
 }

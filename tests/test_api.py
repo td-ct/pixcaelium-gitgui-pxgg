@@ -268,6 +268,18 @@ class TestApi(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("repo/", data["dirs"])
 
+    def test_init_endpoints(self):
+        for path, method, body in [
+            ("/api/meta", "GET", None),
+            ("/api/i18n/en", "GET", None),
+            ("/api/repos", "GET", None),
+            ("/api/workflows", "GET", None),
+            ("/api/commands", "POST", {"repo": self.repo}),
+            ("/api/preflight", "GET", None),
+        ]:
+            status, _ = req(self.base, method, path, body)
+            self.assertEqual(status, 200, path)
+
     def test_preflight(self):
         status, data = req(self.base, "GET", "/api/preflight")
         self.assertEqual(status, 200)

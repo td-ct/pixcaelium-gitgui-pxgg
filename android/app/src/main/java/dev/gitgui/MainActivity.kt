@@ -2,7 +2,10 @@ package dev.gitgui
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.provider.DocumentsContract
+import org.json.JSONObject
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -11,7 +14,6 @@ import android.webkit.WebViewClient
 import dev.gitgui.backend.Backend
 import dev.gitgui.backend.HttpBackend
 import dev.gitgui.backend.TermuxBackend
-import org.json.JSONObject
 
 class MainActivity : Activity() {
 
@@ -33,6 +35,7 @@ class MainActivity : Activity() {
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.addJavascriptInterface(Bridge(), "GitguiBridge")
+        browseSysBtnVisibility()
         setContentView(webView)
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -57,7 +60,42 @@ class MainActivity : Activity() {
         webView.loadUrl("http://gitgui.local/")
     }
 
+    private fun browseSysBtnVisibility() {
+        webView.post {
+            webView.evaluateJavascript(
+                "var b=document.getElementById('browse-sys'); if(b){ if(window.GitguiBridge && GitguiBridge.pickDir) b.style.display=''; else b.style.display='none'; }", null)
+        }
+    }
+
+    private fun pickDirectory() {
+        try {
+            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 4242)
+        } catch (e: Exception) {
+            webView.post { webView.evaluateJavascript("window.gitguiPicked && window.gitguiPicked(null)", null) }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 4242) {
+            var path: String? = null
+            if (resultCode == RESULT_OK && data?.data != null) {
+                val tree = data.data!!
+                try {
+                    contentResolver.takePersistableUriPermission(tree,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                } catch (e: Exception) { /* ok */ }
+                val docId = DocumentsContract.getTreeDocumentId(tree)
+                if (docId.startsWith("primary:")) path = "/storage/emulated/0/" + docId.removePrefix("primary:")
+            }
+            val js = "window.gitguiPicked && window.gitguiPicked(" + JSONObject.quote(path ?: "") + ")"
+            webView.post { webView.evaluateJavascript(js, null) }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     inner class Bridge {
+        @JavascriptInterface fun pickDir() = pickDirectory()
+
         @JavascriptInterface
         fun call(method: String, path: String, body: String?): String {
             val (code, payload) = ApiRouter.handle(this@MainActivity, backend, method, path, body)

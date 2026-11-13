@@ -38,7 +38,6 @@
   "pf.termux_connection": "connection to Termux (RUN_COMMAND)",
   "pf.allow_external_apps": "allow-external-apps = true in ~/.termux/termux.properties",
   "pf.storage": "Termux storage access / battery optimization",
-
   "cat.basics": "Basics",
   "cat.branch": "Branches & merging",
   "cat.remote": "Remotes",
@@ -47,7 +46,6 @@
   "cat.undo": "Undo",
   "cat.config": "Config & credentials",
   "cat.advanced": "Advanced",
-
   "cmd.init": "Create an empty repository",
   "cmd.clone": "Clone a repository into a new directory",
   "cmd.status": "Show working tree status",
@@ -86,7 +84,6 @@
   "cmd.archive": "Create an archive of files from a tree",
   "cmd.bundle": "Move objects and refs by archive",
   "cmd.gc": "Cleanup and optimize the repository",
-
   "arg.path": "path",
   "arg.paths": "paths",
   "arg.url": "URL",
@@ -150,7 +147,6 @@
   "arg.prune_now": "prune now",
   "arg.stash_ref": "stash ref (e.g. stash@{1})",
   "arg.untracked": "include untracked",
-
   "wf.clone.title": "Clone repository",
   "wf.clone.desc": "Download a remote repository to a local directory.",
   "wf.clone.param.url": "Repository URL",
@@ -227,12 +223,10 @@
   "wf.fix_safe_directory.param.path": "Path (default: current repo, '*' for all)",
   "wf.undo_last_commit.title": "Undo last commit",
   "wf.undo_last_commit.desc": "Reset to the previous commit but keep all changes staged.",
-
   "wfopt.conflicts.action.list": "List conflicted files",
   "wfopt.conflicts.action.resolve": "Mark file as resolved (git add)",
   "wfopt.conflicts.action.continue": "Continue merge (commit)",
   "wfopt.conflicts.action.abort": "Abort merge",
-
   "err.merge_conflict.title": "Merge conflict",
   "err.merge_conflict.detail": "Automatic merge failed — some files have conflicts. Resolve them, mark them with 'git add', then continue the merge (or abort).",
   "err.divergent_branches.title": "Divergent branches",
@@ -267,7 +261,6 @@
   "err.already_up_to_date.detail": "Everything is already synchronized.",
   "err.unknown_workflow.title": "Unknown workflow",
   "err.unknown_workflow.detail": "This workflow does not exist.",
-
   "sugg.resolve_conflicts": "Resolve conflicts",
   "sugg.pull_merge": "Pull with merge",
   "sugg.pull_rebase": "Pull with rebase",
@@ -284,5 +277,6 @@
   "sugg.push_set_upstream": "Push with upstream",
   "sugg.switch_to_branch": "Switch to branch",
   "sugg.force_delete_branch": "Force delete branch",
-  "sugg.pull_allow_unrelated": "Pull with unrelated histories"
+  "sugg.pull_allow_unrelated": "Pull with unrelated histories",
+  "ui.system_picker": "System picker"
 }

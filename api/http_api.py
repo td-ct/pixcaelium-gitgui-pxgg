@@ -120,13 +120,21 @@ class Api:
             return 200, {"stopped": stopped, "job_id": job_id}, "application/json"
 
         if path == "preflight" and method in ("GET", "POST"):
-            return 200, preflight_mod.run_preflight(b, st), "application/json"
+            import time as _time
+            cache = getattr(st, "_preflight_cache", None)
+            if cache and _time.time() - cache[0] < 60:
+                return 200, cache[1], "application/json"
+            res = preflight_mod.run_preflight(b, st)
+            st._preflight_cache = (_time.time(), res)
+            return 200, res, "application/json"
 
         if path == "preflight/install" and method == "POST":
             packages = data.get("packages")
             if not isinstance(packages, list) or not all(isinstance(p, str) for p in packages) or len(packages) > 20:
                 return 400, {"error": "packages must be a list of strings (max 20)"}, "application/json"
-            return 200, preflight_mod.install_packages(b, packages), "application/json"
+            res = preflight_mod.install_packages(b, packages)
+            st._preflight_cache = None
+            return 200, res, "application/json"
 
         if path == "complete" and method == "POST":
             words = data.get("words")

@@ -54,6 +54,7 @@ async function api(path, opts) {
   opts = opts || {};
   if (window.GitguiBridge) {
     const res = JSON.parse(window.GitguiBridge.call(opts.method || "GET", "/api" + path, opts.body || null));
+    if (!res) throw new Error("bridge returned null (backend error)");
     const data = res.data;
     if (res.status >= 400) throw new Error((data && data.error) || ("HTTP " + res.status));
     return data;
@@ -508,9 +509,28 @@ async function renderCredTable() {
   } catch (e) { /* ignore */ }
 }
 
-$("#repo-add-btn").onclick = () => { $("#browse-path").value = S.repo || ""; browseList(S.repo || ""); $("#browse-modal").classList.remove("hidden"); };
+function selectRepoPath(p) {
+  if (!p) return;
+  api("/repos/add", { method: "POST", body: JSON.stringify({ path: p }) }).then(loadRepos).catch(() => {});
+  $("#repo-select").value = p;
+  $("#repo-select").onchange({ target: { value: p } });
+}
+
+function pickNativeDir() {
+  if (window.GitguiBridge && window.GitguiBridge.pickDir) {
+    window.gitguiPicked = (p) => { if (p) { $("#browse-modal").classList.add("hidden"); selectRepoPath(p); logTerm("picked: " + p + "\n"); } };
+    try { window.GitguiBridge.pickDir(); return true; } catch (e) { logTerm("native picker failed: " + e.message + "\n"); }
+  }
+  return false;
+}
+
+$("#repo-add-btn").onclick = () => {
+  if (pickNativeDir()) return;
+  $("#browse-path").value = S.repo || ""; browseList(S.repo || ""); $("#browse-modal").classList.remove("hidden");
+};
 $("#browse-close").onclick = () => $("#browse-modal").classList.add("hidden");
 $("#browse-go").onclick = () => browseList($("#browse-path").value);
+$("#browse-sys").onclick = () => { if (pickNativeDir()) $("#browse-modal").classList.add("hidden"); };
 $("#browse-up").onclick = () => { const d = $("#browse-path").value; $("#browse-path").value = d.replace(/\/[^/]*\/?$/, "") || "/"; browseList($("#browse-path").value); };
 $("#browse-select").onclick = async () => {
   const p = $("#browse-path").value;
@@ -575,7 +595,12 @@ $("#preflight-install").onclick = async () => {
 async function runPreflight() {
   const btn = $("#preflight-btn");
   try {
-    const pf = await api("/preflight");
+    let pf = await api("/preflight");
+    for (let i = 0; pf && pf.running && i < 90; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+      pf = await api("/preflight");
+    }
+    if (!pf) throw new Error("empty preflight response");
     S.backend = pf.backend;
     const list = $("#preflight-list");
     list.innerHTML = "";
@@ -605,12 +630,20 @@ async function runPreflight() {
   }
 }
 
+window.onerror = (msg, src, line) => {
+  try { logTerm("JS error: " + msg + " (" + String(src || "").split("/").pop() + ":" + line + ")\n"); } catch (e) {}
+};
+
 (async function init() {
-  await loadMeta();
-  await loadI18n();
-  await loadRepos();
-  await loadWorkflows();
-  await loadCatalog();
-  runPreflight();
+  $("#busy").classList.add("hidden");
+  const step = async (name, fn) => {
+    try { await fn(); } catch (e) { logTerm("init " + name + " failed: " + (e && e.message) + "\n"); }
+  };
+  await step("meta", loadMeta);
+  await step("i18n", loadI18n);
+  await step("repos", loadRepos);
+  await step("workflows", loadWorkflows);
+  await step("catalog", loadCatalog);
   logTerm("gitgui ready — backend: " + S.backend + "\n");
+  setTimeout(() => { try { runPreflight(); } catch (e) { logTerm("preflight failed: " + e.message + "\n"); } }, 400);
 })();
